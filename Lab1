@@ -1,1 +1,341 @@
+# DBMS Lab 1
+
+## 1. Write a SQL statement to create a simple table countries including columns country_id,country_name and region_id.
+
+```sql
+CREATE TABLE countries (
+    country_id INT,
+    country_name VARCHAR(50),
+    region_id INT
+);
+```
+
+---
+
+## 2. Write a SQL statement to create a simple table countries including columns country_id,country_name and region_id which is already exists.
+
+```sql
+CREATE TABLE IF NOT EXISTS countries (
+    country_id INT,
+    country_name VARCHAR(50),
+    region_id INT
+);
+```
+
+---
+
+## 3. Write a SQL statement to create the structure of a table dup_countries similar to countries.
+
+This creates the columns and their definitions but does not copy the data.
+
+```sql
+CREATE TABLE dup_countries
+LIKE countries;
+```
+
+---
+
+## 4. Create a duplicate copy of `countries` including structure and data
+
+```sql
+CREATE TABLE dup_countries AS
+SELECT *
+FROM countries;
+```
+
+---
+
+## 5. Create a `countries` table with a column allowing NULL values
+
+```sql
+CREATE TABLE countries (
+    country_id INT,
+    country_name VARCHAR(50) NULL,
+    region_id INT
+);
+```
+
+---
+
+## 6. Create `jobs` table and check that `max_salary` does not exceed 25000
+
+```sql
+CREATE TABLE jobs (
+    job_id INT,
+    job_title VARCHAR(35),
+    min_salary DECIMAL(6,0),
+    max_salary DECIMAL(6,0),
+    CHECK (max_salary <= 25000)
+);
+```
+
+---
+
+## 7. Allow only Italy, India and China in `countries`
+
+```sql
+CREATE TABLE countries (
+    country_id INT,
+    country_name VARCHAR(50),
+    region_id INT,
+    CHECK (country_name IN ('Italy', 'India', 'China'))
+);
+```
+
+---
+
+## 8. Create `job_history` with `end_date` in date format
+
+```sql
+CREATE TABLE job_history (
+    employee_id INT,
+    start_date DATE,
+    end_date DATE,
+    job_id VARCHAR(10),
+    department_id INT
+);
+```
+
+`DATE` stores dates in MySQL as:
+
+```text
+YYYY-MM-DD
+```
+
+For example:
+
+```text
+2026-09-22
+```
+
+---
+
+## 9. Do not allow duplicate `country_id`
+
+```sql
+CREATE TABLE countries (
+    country_id INT UNIQUE,
+    country_name VARCHAR(50),
+    region_id INT
+);
+```
+
+---
+
+## 10. Create `jobs` with default values
+
+```sql
+CREATE TABLE jobs (
+    job_id INT,
+    job_title VARCHAR(35) DEFAULT ' ',
+    min_salary DECIMAL(6,0) DEFAULT 8000,
+    max_salary DECIMAL(6,0) DEFAULT NULL
+);
+```
+
+---
+
+## 11. Make `country_id` a key field
+
+```sql
+CREATE TABLE countries (
+    country_id INT PRIMARY KEY,
+    country_name VARCHAR(50),
+    region_id INT
+);
+```
+
+A `PRIMARY KEY` automatically prevents duplicate values and does not allow `NULL`.
+
+---
+
+## 12. Create an auto-incremented unique `country_id`
+
+```sql
+CREATE TABLE countries (
+    country_id INT AUTO_INCREMENT PRIMARY KEY,
+    country_name VARCHAR(50),
+    region_id INT
+);
+```
+
+---
+
+## 13. Make the combination of `country_id` and `region_id` unique
+
+```sql
+CREATE TABLE countries (
+    country_id INT,
+    country_name VARCHAR(50),
+    region_id INT,
+    UNIQUE (country_id, region_id)
+);
+```
+
+This allows the same `country_id` or `region_id` individually, but not the same combination.
+
+---
+
+## 14. Create `job_history` with unique employee IDs and foreign key `job_id`
+
+```sql
+CREATE TABLE job_history (
+    employee_id INT UNIQUE,
+    start_date DATE,
+    end_date DATE,
+    job_id VARCHAR(10),
+    department_id INT,
+    FOREIGN KEY (job_id) REFERENCES jobs(job_id)
+);
+```
+
+The `job_id` inserted into `job_history` must already exist in `jobs`.
+
+---
+
+## 15. Create `employees` with a composite foreign key
+
+```sql
+CREATE TABLE employees (
+    employee_id INT PRIMARY KEY,
+    first_name VARCHAR(20),
+    last_name VARCHAR(25),
+    email VARCHAR(25),
+    phone_number VARCHAR(20),
+    hire_date DATE,
+    job_id VARCHAR(10),
+    salary DECIMAL(8,2),
+    commission DECIMAL(8,2),
+    manager_id DECIMAL(6,0),
+    department_id DECIMAL(4,0),
+
+    FOREIGN KEY (department_id, manager_id)
+        REFERENCES departments(department_id, manager_id)
+);
+```
+
+The important part is:
+
+```sql
+FOREIGN KEY (department_id, manager_id)
+REFERENCES departments(department_id, manager_id)
+```
+
+This means the **combination** must exist in `departments`.
+
+---
+
+## 16. Create `employees` with foreign keys to `departments` and `jobs`
+
+```sql
+CREATE TABLE employees (
+    employee_id INT PRIMARY KEY,
+    first_name VARCHAR(20),
+    last_name VARCHAR(25),
+    email VARCHAR(25),
+    phone_number VARCHAR(20),
+    hire_date DATE,
+    job_id VARCHAR(10),
+    salary DECIMAL(8,2),
+    commission DECIMAL(8,2),
+    manager_id DECIMAL(6,0),
+    department_id DECIMAL(4,0),
+
+    FOREIGN KEY (department_id)
+        REFERENCES departments(department_id),
+
+    FOREIGN KEY (job_id)
+        REFERENCES jobs(job_id)
+) ENGINE = InnoDB;
+```
+
+---
+
+## 17. `ON UPDATE CASCADE` and `ON DELETE RESTRICT`
+
+```sql
+CREATE TABLE employees (
+    employee_id INT PRIMARY KEY,
+    first_name VARCHAR(20),
+    last_name VARCHAR(25),
+    job_id INT,
+    salary DECIMAL(8,2),
+
+    FOREIGN KEY (job_id)
+        REFERENCES jobs(job_id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+) ENGINE = InnoDB;
+```
+
+`ON UPDATE CASCADE` means that if a `job_id` changes in the parent `jobs` table, the corresponding value in `employees` is automatically updated.
+
+`ON DELETE RESTRICT` prevents deleting a job if employees are still using that job.
+
+---
+
+## 18. `ON DELETE CASCADE` and `ON UPDATE RESTRICT`
+
+```sql
+CREATE TABLE employees (
+    employee_id INT PRIMARY KEY,
+    first_name VARCHAR(20),
+    last_name VARCHAR(25),
+    job_id INT,
+    salary DECIMAL(8,2),
+
+    FOREIGN KEY (job_id)
+        REFERENCES jobs(job_id)
+        ON DELETE CASCADE
+        ON UPDATE RESTRICT
+) ENGINE = InnoDB;
+```
+
+`ON DELETE CASCADE` means that deleting a job from `jobs` will also delete the employees whose `job_id` refers to that job.
+
+`ON UPDATE RESTRICT` prevents changing a `job_id` in `jobs` if it is referenced by `employees`.
+
+---
+
+## 19. `ON DELETE SET NULL` and `ON UPDATE SET NULL`
+
+The foreign key must allow `NULL`.
+
+```sql
+CREATE TABLE employees (
+    employee_id INT PRIMARY KEY,
+    first_name VARCHAR(20),
+    last_name VARCHAR(25),
+    job_id INT NULL,
+    salary DECIMAL(8,2),
+
+    FOREIGN KEY (job_id)
+        REFERENCES jobs(job_id)
+        ON DELETE SET NULL
+        ON UPDATE SET NULL
+) ENGINE = InnoDB;
+```
+
+If a referenced job is deleted or its ID is updated, the corresponding `job_id` in `employees` becomes `NULL`.
+
+---
+
+## 20. `ON DELETE NO ACTION` and `ON UPDATE NO ACTION`
+
+```sql
+CREATE TABLE employees (
+    employee_id INT PRIMARY KEY,
+    first_name VARCHAR(20),
+    last_name VARCHAR(25),
+    job_id INT,
+    salary DECIMAL(8,2),
+
+    FOREIGN KEY (job_id)
+        REFERENCES jobs(job_id)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION
+) ENGINE = InnoDB;
+```
+
+`NO ACTION` prevents the parent row from being deleted or updated when doing so would violate the foreign key constraint.
 
