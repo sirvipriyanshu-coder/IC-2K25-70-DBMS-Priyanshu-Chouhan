@@ -1,0 +1,211 @@
+--Q1. Create a simple countries table
+-- Create a table with three columns
+CREATE TABLE countries (
+ country_id INT, -- Stores country ID
+ country_name VARCHAR(50),-- Stores country name
+ region_id INT -- Stores region ID
+);
+
+--Q2. Create countries only if it does not already exist
+-- IF NOT EXISTS avoids an error if the table is already present
+CREATE TABLE IF NOT EXISTS countries (
+ country_id INT,
+ country_name VARCHAR(50),
+ region_id INT
+);
+
+--Q3. Create dup_countries with the same structure as countries
+-- LIKE copies the table structure (not its rows)
+CREATE TABLE dup_countries
+LIKE countries;
+
+--Q4. Copy countries including structure and data
+-- CREATE TABLE AS SELECT copies columns and rows
+CREATE TABLE dup_countries AS
+SELECT * FROM countries;
+Note: CREATE TABLE AS SELECT copies rows and columns, but does not copy every index or constraint.
+
+--Q5. Create countries with NULL allowed
+-- NULL means a column may have no value
+CREATE TABLE countries (
+ country_id INT NULL,
+ country_name VARCHAR(50) NULL,
+ region_id INT NULL
+);
+
+--Q6. Check max_salary does not exceed 25000
+-- CHECK validates the specified condition
+CREATE TABLE jobs (
+ job_id INT,
+ job_title VARCHAR(35),
+ min_salary DECIMAL(6,0),
+ max_salary DECIMAL(6,0),
+ CHECK (max_salary <= 25000)
+);
+
+--Q7. Allow only Italy, India and China
+-- IN restricts country_name to the listed values
+CREATE TABLE countries (
+ country_id INT,
+ country_name VARCHAR(50),
+ region_id INT,
+ CHECK (country_name IN ('Italy', 'India', 'China'))
+);
+
+--Q8. Create job_history with date columns
+-- MySQL DATE is stored as YYYY-MM-DD
+CREATE TABLE job_history (
+ employee_id INT,
+ start_date DATE,
+ end_date DATE,
+ job_id VARCHAR(10),
+ department_id INT
+);
+
+--Q9. Prevent duplicate country_id values
+-- UNIQUE disallows duplicate non-NULL country_id values
+CREATE TABLE countries (
+ country_id INT UNIQUE,
+ country_name VARCHAR(50),
+ region_id INT
+);
+
+--Q10. Set default values in jobs
+-- Defaults are used when a column is omitted from INSERT
+CREATE TABLE jobs (
+ job_id INT,
+ job_title VARCHAR(35) DEFAULT ' ',
+ min_salary DECIMAL(6,0) DEFAULT 8000,
+ max_salary DECIMAL(6,0) DEFAULT NULL
+);
+
+--Q11. Make country_id a primary key
+-- PRIMARY KEY uniquely identifies each row and cannot be NULL
+CREATE TABLE countries (
+ country_id INT PRIMARY KEY,
+ country_name VARCHAR(50),
+ region_id INT
+);
+
+--Q12. Create an auto-incremented country_id
+-- AUTO_INCREMENT generates the next numeric ID automatically
+CREATE TABLE countries (
+ country_id INT UNIQUE AUTO_INCREMENT,
+ country_name VARCHAR(50),
+ region_id INT
+);
+
+--Q13. Make country_id and region_id unique together
+-- The pair must be unique; either value alone may repeat
+CREATE TABLE countries (
+ country_id INT,
+ country_name VARCHAR(50),
+ region_id INT,
+ UNIQUE (country_id, region_id)
+);
+
+--Q14. UNIQUE employee_id and foreign key job_id
+-- employee_id cannot repeat; job_id must exist in jobs
+CREATE TABLE job_history (
+ employee_id INT UNIQUE,
+ start_date DATE,
+ end_date DATE,
+ job_id VARCHAR(10),
+ department_id INT,
+ FOREIGN KEY (job_id)
+ REFERENCES jobs(job_id)
+);
+
+--Q15. Create employees with a composite foreign key
+-- department_id + manager_id must match a pair in departments
+CREATE TABLE employees (
+ employee_id INT UNIQUE,
+ first_name VARCHAR(20),
+ last_name VARCHAR(25),
+ email VARCHAR(25),
+ phone_number VARCHAR(20),
+ hire_date DATE,
+ job_id VARCHAR(10),
+ salary DECIMAL(8,2),
+ commission DECIMAL(4,2),
+ manager_id INT,
+ department_id INT,
+ FOREIGN KEY (department_id, manager_id)
+ REFERENCES departments(department_id, manager_id)
+);
+
+--Q16. Create employees with department and job foreign keys
+-- Both foreign keys validate values against parent tables
+CREATE TABLE employees (
+ employee_id INT UNIQUE,
+ first_name VARCHAR(20),
+ last_name VARCHAR(25),
+ email VARCHAR(25),
+ phone_number VARCHAR(20),
+ hire_date DATE,
+ job_id VARCHAR(10),
+ salary DECIMAL(8,2),
+ commission DECIMAL(4,2),
+ manager_id INT,
+ department_id INT,
+ FOREIGN KEY (department_id)
+ REFERENCES departments(department_id),
+ FOREIGN KEY (job_id)
+ REFERENCES jobs(job_id)
+) ENGINE=InnoDB;
+
+--Q17. ON UPDATE CASCADE and ON DELETE RESTRICT
+-- Updating parent job_id propagates; deleting referenced job is blocked
+CREATE TABLE employees (
+ employee_id INT PRIMARY KEY,
+ first_name VARCHAR(20),
+ last_name VARCHAR(25),
+ job_id INT,
+ salary DECIMAL(8,2),
+ FOREIGN KEY (job_id)
+ REFERENCES jobs(job_id)
+ ON UPDATE CASCADE
+ ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+--Q18. ON DELETE CASCADE and ON UPDATE RESTRICT
+-- Deleting a job deletes matching employees; updating referenced job_id is blocked
+CREATE TABLE employees (
+ employee_id INT PRIMARY KEY,
+ first_name VARCHAR(20),
+ last_name VARCHAR(25),
+ job_id INT,
+ salary DECIMAL(8,2),
+ FOREIGN KEY (job_id)
+ REFERENCES jobs(job_id)
+ ON DELETE CASCADE
+ ON UPDATE RESTRICT
+) ENGINE=InnoDB;
+
+--Q19. ON DELETE SET NULL and ON UPDATE SET NULL
+-- job_id in employees must allow NULL for these actions
+CREATE TABLE employees (
+ employee_id INT PRIMARY KEY,
+ first_name VARCHAR(20),
+ last_name VARCHAR(25),
+ job_id INT NULL,
+ salary DECIMAL(8,2),
+ FOREIGN KEY (job_id)
+ REFERENCES jobs(job_id)
+ ON DELETE SET NULL
+ ON UPDATE SET NULL
+) ENGINE=InnoDB;
+
+--Q20. ON DELETE NO ACTION and ON UPDATE NO ACTION
+-- NO ACTION prevents the parent change when child rows refer to it
+CREATE TABLE employees (
+ employee_id INT PRIMARY KEY,
+ first_name VARCHAR(20),
+ last_name VARCHAR(25),
+ job_id INT,
+ salary DECIMAL(8,2),
+ FOREIGN KEY (job_id)
+ REFERENCES jobs(job_id)
+ ON DELETE NO ACTION
+ ON UPDATE NO ACTION
+) ENGINE=InnoDB;
