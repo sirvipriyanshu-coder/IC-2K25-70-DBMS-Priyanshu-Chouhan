@@ -1,0 +1,5 @@
+-- Q11: Display employees with the specified last names
+
+SELECT *
+FROM employees
+WHERE UPPER(last_name) IN ('BLAKE', 'SCOTT', 'KING', 'FORD');
