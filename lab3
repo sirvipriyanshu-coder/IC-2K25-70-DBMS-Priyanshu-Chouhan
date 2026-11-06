@@ -1,0 +1,5 @@
+-- Q1: Display employees whose salary is not between 10000 and 15000
+
+SELECT first_name, last_name, salary
+FROM employees
+WHERE salary NOT BETWEEN 10000 AND 15000;
