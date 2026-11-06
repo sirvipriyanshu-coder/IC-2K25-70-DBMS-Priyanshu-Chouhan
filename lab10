@@ -1,0 +1,5 @@
+-- Q8: Find last names with e as the third character
+
+SELECT last_name
+FROM employees
+WHERE last_name LIKE '__e%';
