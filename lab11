@@ -1,0 +1,4 @@
+-- Q9: Display unique job designations
+
+SELECT DISTINCT job_id
+FROM employees;
