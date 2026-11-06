@@ -1,0 +1,5 @@
+-- Q7: Find last names containing exactly 6 characters
+
+SELECT last_name
+FROM employees
+WHERE last_name LIKE '______';
